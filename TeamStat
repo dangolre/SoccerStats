@@ -1,0 +1,138 @@
+/** 
+   Description : This is a TeamStat class that add the goalsFor and goalsAgainst, increments the points accordingly, 
+                 and formats the output. It also has getters.
+   
+   Name : Reeya Dangol
+*/
+
+// importing java.util
+import java.util.*;
+
+/**
+ * Class that represents TeamStat
+ */
+ 
+public class TeamStat
+{ 
+   // data fields
+   private String name;
+	private int wins;
+   private int draws;
+   private int losses;
+   private int goalsFor;
+   private int goalsAgainst;
+   private int points;
+   
+	
+   /**
+     * No argument constructor that initializes the team's statistics to zero.
+     */
+     
+   public TeamStat()
+   {
+      this.wins = 0;
+      this.draws = 0;
+      this.losses = 0;
+      this.goalsFor = 0;
+      this.goalsAgainst = 0;
+      this.points = 0;
+    }
+
+
+    /**
+     * Records a win for the team and updates goals and points.
+     *
+     * @param goalsFor number of goals scored by the team in the match
+     * @param goalsAgainst number of goals against the team in the match
+     */
+     
+    public void addWin(int goalsFor, int goalsAgainst) 
+    {
+        wins++;
+        this.goalsFor += goalsFor;
+        this.goalsAgainst += goalsAgainst;
+        points += 3;
+    }
+
+
+    /**
+     * Records a draw for the team and updates goals and points.
+     *
+     * @param goalsFor number of goals scored by the team in the match
+     * @param goalsAgainst number of goals against the team in the match
+     */
+     
+    public void addDraw(int goalsFor, int goalsAgainst) 
+    {
+        draws++;
+        this.goalsFor += goalsFor;
+        this.goalsAgainst += goalsAgainst;
+        points++;
+    }
+
+ 
+    /**
+     * Records a loss for the team and updates goals.
+     *
+     * @param goalsFor number of goals scored by the team in the match
+     * @param goalsAgainst number of goals against the team in the match
+     */
+     
+    public void addLoss(int goalsFor, int goalsAgainst) 
+    {
+        losses++;
+        this.goalsFor += goalsFor;
+        this.goalsAgainst += goalsAgainst;
+    }
+    
+
+    /**
+     * Gets the total points earned by the team.
+     *
+     * @return total points
+     */
+     
+    public int getPoints()
+    {
+      return points;
+    }
+    
+
+    /**
+     * Gets the total goals scored by the team.
+     *
+     * @return total goals scored
+     */
+     
+    public int getGoalsFor()
+    {
+      return goalsFor;
+    }
+    
+
+    /**
+     * Gets the total goals against the team
+     *
+     * @return total goals against the team
+     */
+     
+    public int getGoalsAgainst()
+    {
+      return goalsAgainst;
+    }
+
+ 
+     /**
+     * Generates a formatted string representation of the team's statistics.
+     *
+     * @return Formatted string with team statistics
+     */
+     
+    public String toString() 
+    {
+      return String.format(" W: %d D: %d L: %d GF: %d GA: %d PTS: %d\n",
+                  wins, draws, losses, goalsFor, goalsAgainst, points);
+    }
+     
+   	
+}
