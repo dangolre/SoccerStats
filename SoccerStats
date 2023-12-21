@@ -1,0 +1,273 @@
+/** 
+   Description : This programming assignment introduces SoccerStats that reads the data from the csvFile and
+                 keeps track of team records. It also reads the data from the statsFile and keeps the record of
+                 related statistics. It uses the Maps method to store and use the data for further use. It also 
+                 uses a TeamStat class to add the goalsFor and goalsAgainst, increments the points accordingly, 
+                 and formats the output.
+   
+   Name : Reeya Dangol
+*/
+
+// importing java.io and java.util
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+/**
+ * Class that represents SoccerStats
+ *
+ * The SoccerStats class processes soccer match data from a CSV file and provides various statistics
+ * and information based on user queries from another file.
+ */
+ 
+public class SoccerStats 
+{
+   // CSV file containing soccer match data
+   private File file; 
+   
+   // Map to store TeamStat objects for each team     
+   private Map<String, TeamStat> teamStat;
+
+   /**
+     * Constructor for SoccerStats class
+     *
+     * @param csvFile The CSV file containing soccer match data
+     */
+     
+   public SoccerStats(String csvFile) 
+   {
+      this.file = new File(csvFile);
+      this.teamStat = new HashMap<>();
+
+      // file handling
+
+      try {
+         // creates a new scanner object and reads the contents of file
+         Scanner scan = new Scanner(file);
+
+         // true while there is next line in the file
+         while (scan.hasNextLine()) 
+         {
+            // reads and stores the value
+            String line = scan.nextLine();
+            Scanner inline = new Scanner(line);
+            inline.useDelimiter(",");
+
+            // separate the teams and goals
+            String homeTeamName = inline.next();
+            String awayTeamName = inline.next();
+            int homeGoals = inline.nextInt();
+            int awayGoals = inline.nextInt();
+
+            // Initializes teamStat objects if not present in the map
+            if (teamStat.get(homeTeamName) == null) 
+            {
+               teamStat.put(homeTeamName, new TeamStat());
+            }  
+            
+            if (teamStat.get(awayTeamName) == null) 
+            {
+               teamStat.put(awayTeamName, new TeamStat());
+            }
+
+            // Updates teamStat objects based on match results
+            if (homeGoals > awayGoals) 
+            {
+               teamStat.get(homeTeamName).addWin(homeGoals, awayGoals);
+               teamStat.get(awayTeamName).addLoss(awayGoals, homeGoals);
+            } 
+            else if (homeGoals < awayGoals) 
+            {
+               teamStat.get(awayTeamName).addWin(awayGoals, homeGoals);
+               teamStat.get(homeTeamName).addLoss(homeGoals, awayGoals);
+            } 
+            else if (homeGoals == awayGoals) 
+            {
+               teamStat.get(homeTeamName).addDraw(homeGoals, awayGoals);
+               teamStat.get(awayTeamName).addDraw(awayGoals, homeGoals);
+            }
+
+         }
+
+         // closes the scanner object
+         scan.close();
+      }
+
+      // catches the error if the file is not found and displays error message
+      catch (FileNotFoundException error) 
+      {
+         System.out.println("An error occurred. " + error.getMessage());
+      }
+   }
+
+
+   /**
+     * Retrieves statistics and information based on user queries from a file.
+     *
+     * @param statsFile the file containing user queries.
+     * @return a string containing the requested statistics and information.
+     */
+   public String getStats(String statsFile) 
+   {
+      this.file = new File(statsFile);
+      String finalResult = "";
+
+      // file handling
+      try 
+      {
+         // creates a new scanner object and reads the contents of file
+         Scanner scan = new Scanner(file);
+
+         // true while there is next line in the file
+         while (scan.hasNextLine()) 
+         {
+            // reads and stores the value
+            String line = scan.nextLine().trim();
+            Scanner inline = new Scanner(line);
+            inline.useDelimiter(" ");
+
+            // separate the teams and goals
+            String request = inline.next();
+            String name = "";
+            if (inline.hasNext())
+            {
+               name = inline.nextLine().trim();
+            }
+            
+            // Processes user requests and updates the final result string
+            switch (request) 
+            {
+               case "STATS":
+                  if (teamStat.get(name) == null) 
+                  {
+                     finalResult += "TEAM: " + name + " NOT FOUND\n";
+                  } else {
+                     String temp = Stats(name);
+                     finalResult += temp;
+                  }
+                  break;
+
+               case "BEST":
+                  finalResult += Best();
+                  break;
+
+               case "HSCORING":
+                  finalResult += HScoring();
+                  break;
+            }
+
+            // closes the scanner object
+
+         }
+         scan.close();
+      }
+
+      // catches the error if the file is not found and displays error message
+      catch (FileNotFoundException error) {
+         System.out.println("An error occurred. " + error.getMessage());
+      }
+
+      return finalResult;
+   }
+
+
+   /**
+     * Retrieves and formats statistics for a specific team.
+     *
+     * @param name the name of the team.
+     * @return a formatted string containing the team's statistics.
+     */
+   private String Stats(String name) {
+      return String.format("TEAM: %-16s ", name) + " " + teamStat.get(name);
+   }
+
+
+   /**
+     * Determines and returns the best-performing team based on points, goal difference, and goals scored.
+     *
+     * @return a formatted string containing the best-performing team's statistics.
+     */
+     
+   TeamStat bestTeam = null;
+   String best = "";
+
+   private String Best() {
+      for (String name : teamStat.keySet()) {
+         TeamStat currentTeam = teamStat.get(name);
+
+         if (bestTeam == null) {
+            bestTeam = currentTeam;
+            best = name;
+         }
+         
+         // highest points
+         if (currentTeam.getPoints() > bestTeam.getPoints()) {
+            bestTeam = currentTeam;
+            best = name;
+         } 
+         else if (currentTeam.getPoints() == bestTeam.getPoints())
+         {
+            int currentGoalDiff = currentTeam.getGoalsFor() - currentTeam.getGoalsAgainst();
+            int bestGoalDiff = bestTeam.getGoalsFor() - bestTeam.getGoalsAgainst();
+            
+            // tie breaker; largest goal differential
+            if (currentGoalDiff > bestGoalDiff) 
+            {
+               bestTeam = currentTeam;
+               best = name;
+            } 
+            else if (currentGoalDiff == bestGoalDiff)
+            {  
+               // tie breaker; most goals scored
+               if (currentTeam.getGoalsFor() > bestTeam.getGoalsFor()) 
+               {
+                  bestTeam = currentTeam;
+                  best = name;
+               }
+            }
+         }
+      }
+      return String.format("BEST: %-16s ", best) + " " + bestTeam;
+   }
+   
+   
+   /**
+     * Retrieves and formats the names of teams that have scored more goals than the best-performing team.
+     *
+     * @return a formatted string containing the names of teams with more goals than the best-performing team
+     *         and "NONE" if such team does not exist
+     */
+     
+   private String HScoring() 
+   {
+      String hScoring = "";
+      // calls the Best() method
+      Best();
+      Boolean more = false;
+      
+      for (String name : teamStat.keySet()) 
+      {
+         TeamStat currentTeam = teamStat.get(name);
+
+         if (bestTeam != null && currentTeam.getGoalsFor() > bestTeam.getGoalsFor()) 
+         { 
+            if (more)
+            {
+               hScoring += ", ";
+            }
+     
+            hScoring += name;
+            more = true;          
+         }         
+         
+      }
+      
+      if (hScoring.equals(""))
+      {
+         return "HIGH SCORERS: NONE";
+      }
+      return "HIGH SCORERS: " + hScoring;
+   }
+}
